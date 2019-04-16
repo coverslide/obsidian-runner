@@ -9,8 +9,14 @@ const fsp = fs.promises;
 const port = process.env.PORT || 8080;
 const obligeRoot = process.env.OBLIGE_ROOT || __dirname + '/oblige';
 const fileRoot = process.env.FILE_ROOT || __dirname + '/output';
+const configPath = process.env.CONFIG_PATH;
 
-const taskRunner = new TaskRunner(fileRoot, obligeRoot);
+let config = {};
+if (configPath) {
+  config = require(configPath);
+}
+
+const taskRunner = new TaskRunner(fileRoot, obligeRoot, config);
 
 fs.access(fileRoot, (err) => {
   if (err) {
@@ -32,7 +38,6 @@ app.use(async (ctx, next) => {
 });
 
 const router = new KoaRouter();
-
 
 router.get('/', async (ctx, next) => {
   ctx.status = 302;

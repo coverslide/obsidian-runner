@@ -4,12 +4,13 @@ const cp = require('child_process');
 const { promisify } = require('util');
 const fsp = fs.promises;
 
-const DEFAULT_PARAMS = { length: "single", game: "doom2", engine: "gzdoom" };
-
 class Task {
-  constructor (id, fileRoot) {
+  constructor (id, fileRoot, config) {
     this.id = id;
     this.fileRoot = fileRoot;
+    this.config = config;
+    
+    console.log(id, fileRoot, config)
   }
 
   get taskRoot () {
@@ -30,6 +31,10 @@ class Task {
 
   async getFile (filename) {
     return await getFile(this.getPath(filename));
+  }
+
+  async openFile (filename) {
+    return await fsp.open(this.getPath(filename));
   }
 
   async getRawFile (filename) {
@@ -59,7 +64,9 @@ class Task {
   async init (params) {
     await fsp.mkdir(this.taskRoot);
 
-    const realParams = { ...DEFAULT_PARAMS, ...params };
+    const { defaultParams, overrideParams } = this.config;
+
+    const realParams = { ...defaultParams, ...params, ...overrideParams };
     await this.setFile("params.json", realParams);
 
     const status = { state: "pending" };
@@ -94,9 +101,10 @@ class Task {
 }
 
 class TaskRunner {
-  constructor (fileRoot, obligeRoot) {
+  constructor (fileRoot, obligeRoot, config) {
     this.obligeRoot = obligeRoot;
     this.fileRoot = fileRoot;
+    this.config = config;
   }
 
   static newId () {
@@ -104,7 +112,7 @@ class TaskRunner {
   }
 
   get (id) {
-    const task = new Task(id, this.fileRoot);
+    const task = new Task(id, this.fileRoot, this.config);
     return task;
   }
 
