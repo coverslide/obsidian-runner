@@ -9,8 +9,6 @@ class Task {
     this.id = id;
     this.fileRoot = fileRoot;
     this.config = config;
-    
-    console.log(id, fileRoot, config)
   }
 
   get taskRoot () {
@@ -50,7 +48,7 @@ class Task {
   }
 
   static checkFinished (log) {
-    return log.match(/====== END OF OBLIGE LOGS ======/);
+    return log.match(/====== END OF OBSIDIAN LOGS ======/);
   }
 
   static parseTitle (log) {
@@ -101,8 +99,8 @@ class Task {
 }
 
 class TaskRunner {
-  constructor (fileRoot, obligeRoot, config) {
-    this.obligeRoot = obligeRoot;
+  constructor (fileRoot, obsidianRoot, config) {
+    this.obsidianRoot = obsidianRoot;
     this.fileRoot = fileRoot;
     this.config = config;
   }
@@ -117,9 +115,6 @@ class TaskRunner {
   }
 
   async checkTasks () {
-    if (this.running) {
-      console.warn('Already running');
-    }
     if (this.defer) {
       await this.defer.promise;
     }
@@ -174,11 +169,11 @@ class TaskRunner {
     const args = [
       '--batch', task.getPath('output.wad'),
       '--log', task.getPath('run.log'),
-      '--home', this.obligeRoot,
-      '--install', this.obligeRoot,
+      '--home', this.obsidianRoot,
+      '--install', this.obsidianRoot,
     ].concat(Object.entries(params).map(([k, v]) => `${k}=${v}`));
 
-    const taskProcess = promisify(cp.execFile)(this.obligeRoot + '/Oblige', args);
+    const taskProcess = promisify(cp.execFile)(this.obsidianRoot + '/obsidian', args);
 
     try {
       await task.setFile('status.json', { state: 'running' });

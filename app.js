@@ -7,7 +7,7 @@ const { TaskRunner } = require('./util');
 const fsp = fs.promises;
 
 const port = process.env.PORT || 8080;
-const obligeRoot = process.env.OBLIGE_ROOT || __dirname + '/oblige';
+const obsidianRoot = process.env.OBSIDIAN_ROOT || __dirname + '/obsidian';
 const fileRoot = process.env.FILE_ROOT || __dirname + '/output';
 const configPath = process.env.CONFIG_PATH;
 
@@ -16,7 +16,9 @@ if (configPath) {
   config = require(configPath);
 }
 
-const taskRunner = new TaskRunner(fileRoot, obligeRoot, config);
+const options = require('./options.json');
+
+const taskRunner = new TaskRunner(fileRoot, obsidianRoot, config);
 
 fs.access(fileRoot, (err) => {
   if (err) {
@@ -42,6 +44,10 @@ const router = new KoaRouter();
 router.get('/', async (ctx, next) => {
   ctx.status = 302;
   ctx.set('location', '/all');
+});
+
+router.get('/options', async (ctx, next) => {
+  ctx.body = options;
 });
 
 router.get('/new', async (ctx, next) => {

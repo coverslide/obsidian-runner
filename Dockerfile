@@ -1,18 +1,20 @@
-FROM node:alpine
+FROM alpine
 
-RUN apk add fltk-dev git make g++ freetype-dev libpng-dev libjpeg-turbo-dev
-RUN mkdir /app
+ENV GIT_SHA=0b3531da70a858c6c7b9d9510fd040e13243ea9a
+ENV GIT_REPO=https://github.com/dashodanger/Obsidian
+
+RUN apk add nodejs npm fltk-dev git make g++ freetype-dev libpng-dev libjpeg-turbo-dev cmake
+RUN mkdir -p /app/obsidian
+WORKDIR /app/obsidian
+RUN git init
+RUN git remote add origin $GIT_REPO
+RUN git fetch --depth 1 origin $GIT_SHA
+RUN git checkout FETCH_HEAD
+RUN cmake --version
+RUN cmake --preset dist
+RUN cmake --build --preset dist
 WORKDIR /app
-RUN git clone https://github.com/samboy/Oblige --depth 1 oblige
-WORKDIR /app/oblige
-RUN mkdir /app/oblige/obj_linux
-RUN mkdir /app/oblige/obj_linux/lua
-RUN mkdir /app/oblige/obj_linux/glbsp
-RUN mkdir /app/oblige/obj_linux/ajpoly
-RUN mkdir /app/oblige/obj_linux/physfs
-RUN make
-WORKDIR /app
-ADD . /app
-RUN npm i
+ADD app.js config.json options.json util.js package.json package-lock.json /app/
+RUN npm install --production
 
 ENTRYPOINT node app.js
